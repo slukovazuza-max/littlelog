@@ -104,6 +104,15 @@ body::before {
   background:var(--cream);
   border-radius:38px; overflow:hidden;
   height:660px; position:relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .phone-screen {
+    height: 100vh;
+    height: 100svh; /* Uses smallest viewport height to account for browser UI */
+  }
 }
 
 /* ── SCREENS ── */
@@ -138,20 +147,24 @@ body::before {
 .nav {
   background:rgba(255,252,248,.97);
   backdrop-filter:blur(12px);
-  padding:10px 10px 14px;
+  padding:12px 10px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
   display:flex; justify-content:space-around;
   border-top:1px solid rgba(0,0,0,.06);
   flex-shrink:0;
+  min-height:72px;
 }
 .nav-btn {
-  display:flex; flex-direction:column; align-items:center; gap:2px;
-  padding:4px 14px; border-radius:14px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 16px; border-radius:14px; cursor:pointer;
   border:none; background:transparent;
   transition:background .15s;
+  min-width:64px; min-height:56px;
+  justify-content:center;
 }
 .nav-btn.active { background:var(--lav-l); }
-.nav-ico  { font-size:18px; }
-.nav-lbl  { font-size:9px; font-weight:800; color:var(--soft); }
+.nav-ico  { font-size:20px; }
+.nav-lbl  { font-size:10px; font-weight:800; color:var(--soft); }
 .nav-btn.active .nav-lbl { color:var(--lav); }
 
 /* ── SECTION LABEL ── */
@@ -811,7 +824,7 @@ body::before {
             <div class="profile-name">Mia</div>
             <div class="profile-age">6 months old · Born Aug 13, 2024</div>
           </div>
-          <button class="profile-edit" onclick="showToast('✏️ Edit profile coming soon!')">Edit</button>
+          <button class="profile-edit" onclick="editProfile()">Edit</button>
         </div>
 
         <div class="slabel">Schedule Recommendations</div>
@@ -1078,6 +1091,26 @@ function toggleSwitch(id) {
   t.classList.toggle('on', !isOn);
   t.classList.toggle('off', isOn);
   showToast(isOn ? '🔕 Notification turned off' : '🔔 Notification turned on');
+}
+
+/* ── EDIT PROFILE ── */
+function editProfile() {
+  const newName = prompt('Baby\'s name:', document.querySelector('.profile-name').textContent);
+  if (newName && newName.trim()) {
+    document.querySelector('.profile-name').textContent = newName.trim();
+    document.querySelector('.hero-baby').textContent = newName.trim() + '\'s Day';
+    localStorage.setItem('babyName', newName.trim());
+    showToast('✅ Profile updated!');
+  }
+}
+
+// Load saved baby name on startup
+const savedName = localStorage.getItem('babyName');
+if (savedName) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.profile-name').textContent = savedName;
+    document.querySelector('.hero-baby').textContent = savedName + '\'s Day';
+  });
 }
 
 /* ── TOAST ── */
