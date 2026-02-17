@@ -511,7 +511,7 @@ body::before {
         <span class="sbar-icons">●●● WiFi ⬛</span>
       </div>
       <div class="app-hdr">
-        <div><h1>LittleLog</h1><p>Good morning, Sarah 👋</p></div>
+        <div><h1>LittleLog</h1><p id="greeting">Good morning 👋</p></div>
         <div class="avatar">🌙</div>
       </div>
       <div class="scroll">
@@ -530,16 +530,16 @@ body::before {
           <div class="hero-top">
             <div>
               <div class="hero-name">Tracking</div>
-              <div class="hero-baby">Mia's Day</div>
+              <div class="hero-baby" id="heroBabyName">My Baby's Day</div>
             </div>
-            <div class="hero-age">6 months</div>
+            <div class="hero-age" id="heroAge">Set birthday</div>
           </div>
           <div class="ww-box">
             <div class="ww-lbl">⏱ Wake Window</div>
             <div class="ww-row">
-              <div class="ww-time" id="wakeTime">1h 24m <span>awake</span></div>
-              <div class="ww-bar-wrap"><div class="ww-bar" id="wakeBar" style="width:68%"></div></div>
-              <div class="ww-badge" id="wakePct">68%</div>
+              <div class="ww-time" id="wakeTime">0h 0m <span>awake</span></div>
+              <div class="ww-bar-wrap"><div class="ww-bar" id="wakeBar" style="width:0%"></div></div>
+              <div class="ww-badge" id="wakePct">0%</div>
             </div>
           </div>
         </div>
@@ -565,9 +565,23 @@ body::before {
 
         <div class="slabel">Today's Stats</div>
         <div class="stat-row">
-          <div class="scard"><div class="scard-ico">🌙</div><div class="scard-val" id="statSleep">9.5h</div><div class="scard-lbl">Sleep</div><div class="pill pill-g">On track</div></div>
-          <div class="scard"><div class="scard-ico">🍼</div><div class="scard-val" id="statFeeds">3x</div><div class="scard-lbl">Feedings</div><div class="pill pill-y" id="feedPill">1 more</div></div>
-          <div class="scard"><div class="scard-ico">💤</div><div class="scard-val" id="statNaps">2</div><div class="scard-lbl">Naps</div><div class="pill pill-p">+1 left</div></div>
+          <div class="scard"><div class="scard-ico">🌙</div><div class="scard-val" id="statSleep">0h</div><div class="scard-lbl">Sleep</div><div class="pill pill-g">–</div></div>
+          <div class="scard"><div class="scard-ico">🍼</div><div class="scard-val" id="statFeeds">0x</div><div class="scard-lbl">Feedings</div></div>
+          <div class="scard"><div class="scard-ico">💤</div><div class="scard-val" id="statNaps">0</div><div class="scard-lbl">Naps</div></div>
+        </div>
+
+        <div class="slabel">Daily Target</div>
+        <div class="tl-card" style="background:linear-gradient(135deg,var(--lav-l),var(--mint-l)); border:1.5px solid var(--lav); padding:16px 18px; margin-bottom:14px">
+          <div style="display:flex; align-items:center; gap:14px">
+            <div style="font-size:48px; font-weight:900; color:var(--lav); letter-spacing:-2px; line-height:1" id="sleepTargetPct">0%</div>
+            <div style="flex:1">
+              <div style="font-size:11px; color:var(--lav); font-weight:800; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:4px">Daily Sleep Target</div>
+              <div style="font-size:10px; color:var(--mid); font-weight:600" id="sleepTargetDetail">0h of 14h recommended</div>
+              <div style="height:8px; background:rgba(139,124,248,0.15); border-radius:10px; margin-top:6px; overflow:hidden">
+                <div id="sleepTargetBar" style="height:100%; width:0%; background:var(--lav); border-radius:10px; transition:width 0.5s ease"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="rem-card">
@@ -586,10 +600,11 @@ body::before {
             <div class="tl-link" onclick="navTo('log')">See all →</div>
           </div>
           <div class="tl-list" id="timeline">
-            <div class="tl-item"><div class="tl-dot s">🌙</div><div class="tl-info"><div class="tl-nm">Night sleep</div><div class="tl-tm">7:30 PM – 6:45 AM</div></div><div class="tl-dur">11h 15m</div></div>
-            <div class="tl-item"><div class="tl-dot f">🍼</div><div class="tl-info"><div class="tl-nm">Bottle · 150 ml</div><div class="tl-tm">7:00 AM</div></div><div class="tl-dur">150ml</div></div>
-            <div class="tl-item"><div class="tl-dot s">💤</div><div class="tl-info"><div class="tl-nm">Nap 1</div><div class="tl-tm">8:45 – 9:55 AM</div></div><div class="tl-dur">1h 10m</div></div>
-            <div class="tl-item"><div class="tl-dot f">🥣</div><div class="tl-info"><div class="tl-nm">Solids · Puree</div><div class="tl-tm">10:10 AM</div></div><div class="tl-dur">small</div></div>
+            <div style="text-align:center; padding:40px 20px; color:var(--soft)">
+              <div style="font-size:40px; margin-bottom:12px">📝</div>
+              <div style="font-size:13px; font-weight:700">No events yet</div>
+              <div style="font-size:11px; margin-top:4px">Tap the buttons above to start logging</div>
+            </div>
           </div>
         </div>
 
@@ -605,11 +620,11 @@ body::before {
     <!-- ═══ LOG ═══ -->
     <div class="screen" id="screen-log">
       <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
-      <div class="log-hdr"><h2>Log Event</h2><p>Tap to record an event for Mia</p></div>
+      <div class="log-hdr"><h2>Log Event</h2><p id="logSubtitle">Tap to record an event</p></div>
       <div class="scroll">
 
         <div id="savedBanner" style="display:none" class="saved-banner">
-          ✅ &nbsp;Event saved to Mia's log!
+          ✅ &nbsp;Event saved to log!
         </div>
 
         <div class="log-tabs">
@@ -679,9 +694,9 @@ body::before {
         <div class="tl-card">
           <div class="tl-hdr"><div class="tl-hdr-title">Today's Log</div></div>
           <div class="tl-list" id="logList">
-            <div class="tl-item"><div class="tl-dot s">🌙</div><div class="tl-info"><div class="tl-nm">Night sleep</div><div class="tl-tm">7:30 PM – 6:45 AM</div></div><div class="tl-dur">11h 15m</div></div>
-            <div class="tl-item"><div class="tl-dot f">🍼</div><div class="tl-info"><div class="tl-nm">Bottle · 150 ml</div><div class="tl-tm">7:00 AM</div></div><div class="tl-dur">150ml</div></div>
-            <div class="tl-item"><div class="tl-dot s">💤</div><div class="tl-info"><div class="tl-nm">Nap 1</div><div class="tl-tm">8:45 – 9:55 AM</div></div><div class="tl-dur">1h 10m</div></div>
+            <div style="text-align:center; padding:20px; color:var(--soft); font-size:11px">
+              Events you log will appear here
+            </div>
           </div>
         </div>
 
@@ -698,7 +713,7 @@ body::before {
     <div class="screen" id="screen-stats">
       <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
       <div class="stats-hdr">
-        <div><h2>Statistics</h2><p>Mia · 6 months old</p></div>
+        <div><h2>Statistics</h2><p id="statsSubtitle">Track progress</p></div>
         <div class="range-pills">
           <button class="rpill" onclick="setRange(this,'7d')">7d</button>
           <button class="rpill active" onclick="setRange(this,'30d')">30d</button>
@@ -708,15 +723,15 @@ body::before {
       <div class="scroll">
 
         <div class="sum-strip">
-          <div class="sum-item"><div class="sum-v" id="sAvgSleep">13.2</div><div class="sum-u">hrs/day</div><div class="sum-l">Avg Sleep</div></div>
-          <div class="sum-item"><div class="sum-v" id="sAvgFeeds">4.8</div><div class="sum-u">feeds</div><div class="sum-l">Avg Feeds</div></div>
-          <div class="sum-item"><div class="sum-v" id="sAvgNaps">2.1</div><div class="sum-u">naps</div><div class="sum-l">Avg Naps</div></div>
+          <div class="sum-item"><div class="sum-v" id="sAvgSleep">0</div><div class="sum-u">hrs/day</div><div class="sum-l">Avg Sleep</div></div>
+          <div class="sum-item"><div class="sum-v" id="sAvgFeeds">0</div><div class="sum-u">feeds</div><div class="sum-l">Avg Feeds</div></div>
+          <div class="sum-item"><div class="sum-v" id="sAvgNaps">0</div><div class="sum-u">naps</div><div class="sum-l">Avg Naps</div></div>
         </div>
 
         <div class="chart-card">
           <div class="chart-hdr">
             <div class="chart-title">Daily Sleep (hrs)</div>
-            <div class="chart-badge cb-mint" id="sleepTrend">↑ +0.4h this week</div>
+            <div class="chart-badge cb-mint" id="sleepTrend">No data yet</div>
           </div>
           <svg width="100%" height="80" viewBox="0 0 272 80">
             <line x1="0" y1="15" x2="272" y2="15" stroke="#EDE9FF" stroke-width="1"/>
@@ -815,14 +830,14 @@ body::before {
     <!-- ═══ SETTINGS ═══ -->
     <div class="screen" id="screen-settings">
       <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
-      <div class="sett-hdr"><h2>Settings</h2><p>Mia's profile &amp; preferences</p></div>
+      <div class="sett-hdr"><h2>Settings</h2><p id="settingsSubtitle">Profile &amp; preferences</p></div>
       <div class="scroll">
 
         <div class="profile-card">
           <div class="profile-ava">👶</div>
-          <div>
-            <div class="profile-name">Mia</div>
-            <div class="profile-age">6 months old · Born Aug 13, 2024</div>
+          <div style="flex:1">
+            <div class="profile-name" id="babyName">My Baby</div>
+            <div class="profile-age" id="babyAge">Tap Edit to set birthday</div>
           </div>
           <button class="profile-edit" onclick="editProfile()">Edit</button>
         </div>
@@ -909,9 +924,9 @@ let currentScreen = 'home';
 let sleepActive = false;
 let sleepStartTime = null;
 let sleepTimerInterval = null;
-let feedCount = 3;
-let napCount = 2;
-let wakeMinutes = 84; // 1h 24m
+let feedCount = 0;
+let napCount = 0;
+let wakeMinutes = 0;
 let wakeWindowMax = 150; // 2.5h for 6mo
 let remMinutes = 22;
 
@@ -1036,10 +1051,22 @@ function addToTimeline(type, ico, label, time, dur) {
     <div class="tl-info"><div class="tl-nm">${label}</div><div class="tl-tm">${time}</div></div>
     <div class="tl-dur">${dur}</div>
   </div>`;
+  
   const tl = document.getElementById('timeline');
+  // Clear empty state if this is first event
+  if (tl.querySelector('[style*="text-align:center"]')) {
+    tl.innerHTML = '';
+  }
   tl.insertAdjacentHTML('afterbegin', html);
+  
   const logList = document.getElementById('logList');
-  if (logList) logList.insertAdjacentHTML('afterbegin', html);
+  if (logList) {
+    // Clear empty state if this is first event
+    if (logList.querySelector('[style*="text-align:center"]')) {
+      logList.innerHTML = '';
+    }
+    logList.insertAdjacentHTML('afterbegin', html);
+  }
 }
 
 /* ── LOG SCREEN ── */
@@ -1095,23 +1122,91 @@ function toggleSwitch(id) {
 
 /* ── EDIT PROFILE ── */
 function editProfile() {
-  const newName = prompt('Baby\'s name:', document.querySelector('.profile-name').textContent);
-  if (newName && newName.trim()) {
-    document.querySelector('.profile-name').textContent = newName.trim();
-    document.querySelector('.hero-baby').textContent = newName.trim() + '\'s Day';
-    localStorage.setItem('babyName', newName.trim());
-    showToast('✅ Profile updated!');
+  const currentName = localStorage.getItem('babyName') || 'My Baby';
+  const currentBirthday = localStorage.getItem('babyBirthday') || '';
+  
+  const newName = prompt('Baby\'s name:', currentName);
+  if (!newName || !newName.trim()) return;
+  
+  const newBirthday = prompt('Birthday (YYYY-MM-DD):', currentBirthday);
+  if (!newBirthday) return;
+  
+  // Validate date format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(newBirthday)) {
+    alert('Please use format: YYYY-MM-DD (e.g., 2024-08-13)');
+    return;
   }
+  
+  // Save to localStorage
+  localStorage.setItem('babyName', newName.trim());
+  localStorage.setItem('babyBirthday', newBirthday);
+  
+  // Update UI
+  updateBabyInfo();
+  showToast('✅ Profile updated!');
 }
 
-// Load saved baby name on startup
-const savedName = localStorage.getItem('babyName');
-if (savedName) {
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.profile-name').textContent = savedName;
-    document.querySelector('.hero-baby').textContent = savedName + '\'s Day';
-  });
+function updateBabyInfo() {
+  const name = localStorage.getItem('babyName') || 'My Baby';
+  const birthday = localStorage.getItem('babyBirthday');
+  
+  // Update name everywhere
+  document.getElementById('babyName').textContent = name;
+  document.getElementById('heroBabyName').textContent = name + '\'s Day';
+  document.getElementById('logSubtitle').textContent = 'Tap to record an event for ' + name;
+  document.getElementById('settingsSubtitle').textContent = name + '\'s profile & preferences';
+  
+  if (birthday) {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    
+    // Calculate age
+    let months = (today.getFullYear() - birthDate.getFullYear()) * 12;
+    months -= birthDate.getMonth();
+    months += today.getMonth();
+    
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    let ageText = '';
+    if (years > 0) {
+      ageText = years + (years === 1 ? ' year' : ' years');
+      if (remainingMonths > 0) ageText += ' ' + remainingMonths + (remainingMonths === 1 ? ' month' : ' months');
+    } else {
+      ageText = months + (months === 1 ? ' month' : ' months') + ' old';
+    }
+    
+    // Format birthday for display
+    const formatted = birthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    
+    document.getElementById('babyAge').textContent = ageText + ' · Born ' + formatted;
+    document.getElementById('heroAge').textContent = months + (months === 1 ? ' month' : ' months');
+    document.getElementById('statsSubtitle').textContent = name + ' · ' + ageText;
+  } else {
+    document.getElementById('babyAge').textContent = 'Tap Edit to set birthday';
+    document.getElementById('heroAge').textContent = 'Set birthday';
+    document.getElementById('statsSubtitle').textContent = 'Track progress';
+  }
+  
+  updateSleepTarget();
 }
+
+function updateSleepTarget() {
+  const totalSleepMinutes = 0; // Will be calculated from logged sleep events
+  const totalSleepHours = totalSleepMinutes / 60;
+  const recommendedHours = 14; // Age-appropriate target (can be dynamic later)
+  
+  const percentage = Math.min(Math.round((totalSleepHours / recommendedHours) * 100), 100);
+  
+  document.getElementById('sleepTargetPct').textContent = percentage + '%';
+  document.getElementById('sleepTargetDetail').textContent = 
+    totalSleepHours.toFixed(1) + 'h of ' + recommendedHours + 'h recommended';
+  document.getElementById('sleepTargetBar').style.width = percentage + '%';
+}
+
+// Load saved profile on startup
+window.addEventListener('DOMContentLoaded', updateBabyInfo);
 
 /* ── TOAST ── */
 let toastTimeout;
