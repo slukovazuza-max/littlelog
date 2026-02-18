@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LittleLog – Updated Mockup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LittleLog">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8B7CF8">
+<meta name="description" content="Track your baby's sleep, feedings, and wake windows with age-appropriate recommendations">
+<title>LittleLog – Baby Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%238B7CF8'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='white'%3E🌙%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,48 +32,64 @@
   --dark: #2A2040;
   --mid: #6B5F8A;
   --soft: #A89EC4;
+  --shadow: rgba(139,124,248,0.18);
 }
 
 body {
   background: linear-gradient(145deg,#F0ECF9 0%,#FDF8F3 40%,#FCF0F8 100%);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-start;
+  align-items: center; justify-content: center;
   font-family: 'Nunito', sans-serif;
-  padding: 32px 16px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 body::before {
   content:''; position:fixed; top:-100px; left:-100px;
   width:500px; height:500px;
   background:radial-gradient(circle,rgba(139,124,248,.12) 0%,transparent 70%);
-  pointer-events:none; z-index:0;
+  pointer-events:none;
+  z-index: 0;
 }
 
-.page-title { text-align:center; margin-bottom:28px; z-index:1; position:relative; }
-.page-title h1 { font-family:'DM Serif Display',serif; font-size:32px; color:var(--dark); }
-.page-title p  { font-size:13px; color:var(--soft); font-weight:600; margin-top:3px; }
+/* ── PAGE TITLE (hidden on mobile) ── */
+.page-title { display: none; }
 
-.phones-row {
-  display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
-  justify-content: center; z-index:1; position:relative;
-}
-
+/* ── PHONE SHELL ── */
 .phone-wrap {
   width:340px;
+  max-width: 100vw;
   background:#1A1030;
   border-radius:52px; padding:14px;
-  box-shadow:0 40px 80px rgba(42,32,64,.35),0 0 0 1.5px rgba(255,255,255,.08);
+  box-shadow:0 40px 80px rgba(42,32,64,.35),0 0 0 1.5px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.1);
   position:relative;
-  animation: float 6s ease-in-out infinite;
+  z-index: 1;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+/* Mobile: fullscreen mode */
+@media (max-width: 480px) {
+  .phone-wrap {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  
+  .phone-notch {
+    display: none;
+  }
+  
+  .phone-screen {
+    border-radius: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
 }
-
-.phone-wrap:nth-child(2) { animation-delay: -3s; }
 
 .phone-notch {
   width:100px; height:28px;
@@ -80,41 +104,84 @@ body::before {
   background:var(--cream);
   border-radius:38px; overflow:hidden;
   height:660px; position:relative;
+  display: flex;
+  flex-direction: column;
 }
 
+@media (max-width: 480px) {
+  .phone-screen {
+    height: 100vh;
+    height: 100svh; /* Uses smallest viewport height to account for browser UI */
+  }
+}
+
+/* ── SCREENS ── */
+.screen {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  opacity:0; pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease;
+  transform:translateX(30px);
+}
+.screen.active {
+  opacity:1; pointer-events:all;
+  transform:translateX(0);
+}
+.screen.slide-left  { transform:translateX(-30px); }
+
+/* ── STATUS BAR ── */
 .sbar {
   background:var(--warm-white);
   padding:10px 22px 6px;
   display:flex; justify-content:space-between; align-items:center;
+  flex-shrink:0;
 }
 .sbar-time { font-size:12px; font-weight:800; color:var(--dark); }
 .sbar-icons{ font-size:10px; color:var(--dark); }
 
-.screen { height:100%; display:flex; flex-direction:column; }
+/* ── SCREEN SCROLL AREA ── */
 .scroll { flex:1; overflow-y:auto; padding:0 14px 8px; scrollbar-width:none; }
 .scroll::-webkit-scrollbar { display:none; }
 
+/* ── NAV BAR ── */
 .nav {
   background:rgba(255,252,248,.97);
   backdrop-filter:blur(12px);
   padding:12px 10px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
   display:flex; justify-content:space-around;
   border-top:1px solid rgba(0,0,0,.06);
+  flex-shrink:0;
+  min-height:72px;
 }
 .nav-btn {
   display:flex; flex-direction:column; align-items:center; gap:3px;
-  padding:8px 16px; border-radius:14px;
+  padding:8px 16px; border-radius:14px; cursor:pointer;
   border:none; background:transparent;
+  transition:background .15s;
+  min-width:64px; min-height:56px;
+  justify-content:center;
 }
 .nav-btn.active { background:var(--lav-l); }
 .nav-ico  { font-size:20px; }
 .nav-lbl  { font-size:10px; font-weight:800; color:var(--soft); }
 .nav-btn.active .nav-lbl { color:var(--lav); }
 
+/* ── SECTION LABEL ── */
+.slabel {
+  font-size:11px; font-weight:800; color:var(--soft);
+  text-transform:uppercase; letter-spacing:.8px;
+  margin:14px 0 8px;
+}
+
+/* ═══════════════════════════════════
+   HOME SCREEN
+═══════════════════════════════════ */
 .app-hdr {
   background:var(--warm-white);
   padding:4px 22px 16px;
   display:flex; justify-content:space-between; align-items:center;
+  flex-shrink:0;
 }
 .app-hdr h1 { font-family:'DM Serif Display',serif; font-size:22px; color:var(--dark); }
 .app-hdr p  { font-size:11px; color:var(--soft); font-weight:600; margin-top:1px; }
@@ -122,44 +189,48 @@ body::before {
   width:36px; height:36px;
   background:linear-gradient(135deg,var(--lav),var(--coral));
   border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-size:18px; box-shadow:0 3px 10px rgba(139,124,248,0.18);
+  font-size:18px; box-shadow:0 3px 10px var(--shadow);
 }
 
-.slabel {
-  font-size:11px; font-weight:800; color:var(--soft);
-  text-transform:uppercase; letter-spacing:.8px;
-  margin:14px 0 8px;
-}
-
+/* Hero card */
 .hero {
   background:linear-gradient(135deg,var(--lav) 0%,#6B5CF0 100%);
   border-radius:24px; padding:20px; margin-bottom:14px;
   position:relative; overflow:hidden;
   box-shadow:0 8px 24px rgba(107,92,240,.35);
+  cursor:default;
 }
 .hero::before {
   content:''; position:absolute; top:-30px; right:-20px;
   width:120px; height:120px; background:rgba(255,255,255,.08); border-radius:50%;
 }
-.hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; position:relative; z-index:1; }
-.hero-name { font-size:11px; color:rgba(255,255,255,.7); font-weight:700; text-transform:uppercase; }
+.hero::after {
+  content:''; position:absolute; bottom:-20px; right:30px;
+  width:80px; height:80px; background:rgba(255,255,255,.06); border-radius:50%;
+}
+.hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+.hero-name { font-size:11px; color:rgba(255,255,255,.7); font-weight:700; text-transform:uppercase; letter-spacing:.8px; }
 .hero-baby { font-family:'DM Serif Display',serif; font-size:22px; color:#fff; }
 .hero-age  { background:rgba(255,255,255,.18); border-radius:20px; padding:4px 10px; font-size:11px; color:#fff; font-weight:700; }
-.ww-box    { background:rgba(255,255,255,.12); border-radius:16px; padding:12px 14px; position:relative; z-index:1; }
-.ww-lbl    { font-size:10px; color:rgba(255,255,255,.65); font-weight:700; text-transform:uppercase; margin-bottom:6px; }
+.ww-box    { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); border-radius:16px; padding:12px 14px; }
+.ww-lbl    { font-size:10px; color:rgba(255,255,255,.65); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
 .ww-row    { display:flex; align-items:center; gap:8px; }
-.ww-time   { font-size:24px; font-weight:900; color:#fff; min-width:90px; }
+.ww-time   { font-size:24px; font-weight:900; color:#fff; letter-spacing:-1px; min-width:90px; }
 .ww-time span { font-size:12px; font-weight:600; color:rgba(255,255,255,.7); }
 .ww-bar-wrap { flex:1; height:6px; background:rgba(255,255,255,.2); border-radius:10px; overflow:hidden; }
-.ww-bar    { height:100%; background:linear-gradient(90deg,#fff 0%,var(--gold) 100%); border-radius:10px; width:0%; }
-.ww-badge  { background:var(--gold); border-radius:8px; padding:3px 8px; font-size:10px; font-weight:800; color:var(--dark); }
+.ww-bar    { height:100%; background:linear-gradient(90deg,#fff 0%,var(--gold) 100%); border-radius:10px; transition:width .5s ease; }
+.ww-badge  { background:var(--gold); border-radius:8px; padding:3px 8px; font-size:10px; font-weight:800; color:var(--dark); white-space:nowrap; }
 
+/* Quick log */
 .ql-row { display:flex; gap:8px; margin-bottom:14px; }
 .ql-btn {
   flex:1; border-radius:18px; padding:12px 8px;
   display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; border:none; font-family:inherit;
   box-shadow:0 4px 12px rgba(0,0,0,.06);
+  transition:transform .12s ease, box-shadow .12s ease;
 }
+.ql-btn:active { transform:scale(.94); box-shadow:0 2px 6px rgba(0,0,0,.08); }
 .ql-btn.sleep { background:var(--lav-l); }
 .ql-btn.wake  { background:var(--gold-l); }
 .ql-btn.feed  { background:var(--coral-l); }
@@ -169,43 +240,125 @@ body::before {
 .ql-btn.feed  .ql-ico { background:var(--coral); }
 .ql-lbl { font-size:10px; font-weight:800; color:var(--dark); }
 .ql-sub { font-size:9px; color:var(--soft); font-weight:600; }
+.ql-btn.active-state { outline:2.5px solid var(--lav); }
 
+/* Stat cards */
 .stat-row { display:flex; gap:8px; margin-bottom:14px; }
-.scard { flex:1; background:var(--warm-white); border-radius:18px; padding:12px 10px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
-.scard-ico { font-size:16px; margin-bottom:5px; }
-.scard-val { font-size:17px; font-weight:900; color:var(--dark); }
-.scard-lbl { font-size:9px; color:var(--soft); font-weight:700; text-transform:uppercase; }
-.pill { display:inline-block; margin-top:3px; padding:2px 7px; border-radius:20px; font-size:9px; font-weight:800; background:#F0F0F0; color:var(--soft); }
-
-.target-card {
-  background:linear-gradient(135deg,var(--lav-l),var(--mint-l));
-  border:1.5px solid var(--lav);
-  border-radius:20px; padding:16px 18px; margin-bottom:14px;
-  box-shadow:0 4px 14px rgba(139,124,248,.15);
+.scard {
+  flex:1; background:var(--warm-white); border-radius:18px; padding:12px 10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.04);
 }
-.target-pct { font-size:48px; font-weight:900; color:var(--lav); letter-spacing:-2px; line-height:1; }
-.target-lbl { font-size:11px; color:var(--lav); font-weight:800; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:4px; }
-.target-detail { font-size:10px; color:var(--mid); font-weight:600; }
-.target-bar-w { height:8px; background:rgba(139,124,248,0.15); border-radius:10px; margin-top:6px; overflow:hidden; }
-.target-bar { height:100%; width:0%; background:var(--lav); border-radius:10px; }
+.scard-ico { font-size:16px; margin-bottom:5px; }
+.scard-val { font-size:17px; font-weight:900; color:var(--dark); letter-spacing:-.5px; }
+.scard-lbl { font-size:9px; color:var(--soft); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+.pill { display:inline-block; margin-top:3px; padding:2px 7px; border-radius:20px; font-size:9px; font-weight:800; }
+.pill-g { background:#E2F9EB; color:#2E9E58; }
+.pill-y { background:#FFF6D6; color:#C4860A; }
+.pill-p { background:var(--lav-l); color:var(--lav); }
 
+/* Reminder */
+.rem-card {
+  background:var(--warm-white); border:1.5px solid var(--coral-m); border-radius:18px;
+  padding:12px 14px; display:flex; align-items:center; gap:10px;
+  margin-bottom:14px; box-shadow:0 4px 14px rgba(255,140,105,.12);
+}
+.rem-ico { width:36px; height:36px; background:var(--coral); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.rem-lbl { font-size:10px; color:var(--coral); font-weight:800; text-transform:uppercase; letter-spacing:.5px; }
+.rem-title { font-size:12px; font-weight:800; color:var(--dark); }
+.rem-time  { font-size:10px; color:var(--soft); font-weight:600; }
+.rem-cd    { margin-left:auto; text-align:center; }
+.rem-mins  { font-size:18px; font-weight:900; color:var(--coral); letter-spacing:-1px; line-height:1; }
+.rem-ml    { font-size:9px; color:var(--soft); font-weight:700; }
+
+/* Timeline */
 .tl-card { background:var(--warm-white); border-radius:20px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
 .tl-hdr  { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .tl-hdr-title { font-size:13px; font-weight:800; color:var(--dark); }
+.tl-link { font-size:10px; color:var(--lav); font-weight:700; cursor:pointer; }
+.tl-list { display:flex; flex-direction:column; gap:7px; }
+.tl-item { display:flex; align-items:center; gap:10px; }
+.tl-dot  { width:28px; height:28px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.tl-dot.s { background:var(--lav-l); }
+.tl-dot.f { background:var(--coral-l); }
+.tl-dot.w { background:var(--gold-l); }
+.tl-info { flex:1; }
+.tl-nm   { font-size:11px; font-weight:700; color:var(--dark); }
+.tl-tm   { font-size:10px; color:var(--soft); font-weight:600; }
+.tl-dur  { font-size:10px; font-weight:800; color:var(--mid); }
 
-.empty {
-  text-align:center; padding:40px 20px; color:var(--soft);
+/* ═══════════════════════════════════
+   LOG SCREEN
+═══════════════════════════════════ */
+.log-hdr { background:var(--warm-white); padding:12px 22px 14px; flex-shrink:0; }
+.log-hdr h2 { font-family:'DM Serif Display',serif; font-size:22px; color:var(--dark); }
+.log-hdr p  { font-size:11px; color:var(--soft); font-weight:600; margin-top:1px; }
+
+.log-tabs { display:flex; gap:6px; margin-bottom:16px; }
+.log-tab {
+  flex:1; padding:9px 6px; border-radius:14px; border:none; font-family:inherit;
+  font-size:11px; font-weight:800; cursor:pointer; transition:all .15s;
+  background:var(--lav-l); color:var(--lav);
 }
-.empty-ico { font-size:40px; margin-bottom:12px; }
-.empty-title { font-size:13px; font-weight:700; }
-.empty-sub { font-size:11px; margin-top:4px; }
+.log-tab.active { background:var(--lav); color:#fff; box-shadow:0 4px 12px rgba(139,124,248,.3); }
 
+.log-form { background:var(--warm-white); border-radius:20px; padding:16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+.log-form h3 { font-size:13px; font-weight:800; color:var(--dark); margin-bottom:12px; }
+
+.form-row { margin-bottom:12px; }
+.form-lbl { font-size:10px; font-weight:800; color:var(--soft); text-transform:uppercase; letter-spacing:.6px; margin-bottom:5px; }
+.form-input {
+  width:100%; padding:10px 12px; border-radius:12px;
+  border:1.5px solid var(--lav-l); background:var(--cream);
+  font-family:inherit; font-size:12px; font-weight:700; color:var(--dark);
+  outline:none; transition:border-color .15s;
+}
+.form-input:focus { border-color:var(--lav); }
+
+.type-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.type-pill {
+  padding:6px 12px; border-radius:20px; border:none; font-family:inherit;
+  font-size:11px; font-weight:800; cursor:pointer; transition:all .15s;
+  background:var(--lav-l); color:var(--mid);
+}
+.type-pill.sel { background:var(--lav); color:#fff; }
+
+.save-btn {
+  width:100%; padding:13px; border-radius:16px; border:none;
+  background:linear-gradient(135deg,var(--lav),#6B5CF0);
+  color:#fff; font-family:inherit; font-size:13px; font-weight:800;
+  cursor:pointer; margin-top:4px;
+  box-shadow:0 6px 18px rgba(139,124,248,.35);
+  transition:transform .12s, box-shadow .12s;
+}
+.save-btn:active { transform:scale(.97); box-shadow:0 3px 10px rgba(139,124,248,.3); }
+
+.saved-banner {
+  background:linear-gradient(135deg,var(--mint-l),#E0FFF8);
+  border:1.5px solid var(--mint);
+  border-radius:14px; padding:10px 14px;
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:12px;
+  animation:slideIn .3s ease;
+  font-size:12px; font-weight:700; color:var(--mint);
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ═══════════════════════════════════
+   STATS SCREEN
+═══════════════════════════════════ */
 .stats-hdr {
   background:var(--warm-white); padding:4px 22px 14px;
-  display:flex; justify-content:space-between; align-items:flex-end;
+  display:flex; justify-content:space-between; align-items:flex-end; flex-shrink:0;
 }
 .stats-hdr h2 { font-family:'DM Serif Display',serif; font-size:22px; color:var(--dark); }
 .stats-hdr p  { font-size:11px; color:var(--soft); font-weight:600; margin-top:1px; }
+.range-pills  { display:flex; gap:4px; }
+.rpill {
+  padding:4px 10px; border-radius:20px; border:none; font-family:inherit;
+  font-size:10px; font-weight:800; cursor:pointer; transition:all .15s;
+  background:var(--lav-l); color:var(--mid);
+}
+.rpill.active { background:var(--lav); color:#fff; }
 
 .sum-strip {
   display:flex; margin-bottom:14px;
@@ -221,211 +374,918 @@ body::before {
 .sum-item:last-child { border-right:none; }
 .sum-v { font-size:20px; font-weight:900; color:#fff; letter-spacing:-1px; }
 .sum-u { font-size:9px; color:var(--lav-m); font-weight:700; }
-.sum-l { font-size:8px; color:rgba(255,255,255,.6); font-weight:700; text-transform:uppercase; }
+.sum-l { font-size:8px; color:rgba(255,255,255,.6); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
 
 .chart-card { background:var(--warm-white); border-radius:20px; padding:14px 16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
 .chart-hdr  { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .chart-title { font-size:13px; font-weight:800; color:var(--dark); }
-.chart-badge { font-size:9px; font-weight:800; padding:2px 8px; border-radius:20px; background:var(--mint-l); color:var(--soft); }
+.chart-badge { font-size:9px; font-weight:800; padding:2px 8px; border-radius:20px; }
+.cb-mint   { background:var(--mint-l); color:var(--mint); }
+.cb-coral  { background:var(--coral-l); color:var(--coral); }
 
-.label-tag {
-  display:inline-block;
-  background:var(--lav-l);
-  color:var(--lav);
-  font-size:9px;
-  font-weight:800;
-  padding:3px 8px;
-  border-radius:8px;
-  margin-bottom:8px;
+.xlabels { display:flex; justify-content:space-between; margin-top:4px; padding:0 2px; }
+.xlabels span { font-size:8px; color:var(--soft); font-weight:700; }
+
+.bd-card { background:var(--warm-white); border-radius:20px; padding:14px 16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+.bd-row  { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.bd-row:last-child { margin-bottom:0; }
+.bd-ico  { width:28px; height:28px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.bd-info { flex:1; }
+.bd-lbl  { font-size:11px; font-weight:700; color:var(--dark); }
+.bd-sub  { font-size:9px; color:var(--soft); font-weight:600; }
+.bd-bar-w { height:5px; background:var(--lav-l); border-radius:10px; overflow:hidden; margin-top:3px; }
+.bd-bar   { height:100%; border-radius:10px; }
+.bd-val  { font-size:12px; font-weight:900; color:var(--dark); }
+
+.stage-card {
+  background:linear-gradient(135deg,var(--coral-l),var(--gold-l));
+  border:1.5px solid var(--coral-m); border-radius:18px;
+  padding:12px 14px; margin-bottom:14px;
+  display:flex; align-items:center; gap:10px;
 }
+.stage-ico { font-size:24px; flex-shrink:0; }
+.stg-lbl { font-size:10px; color:var(--coral); font-weight:800; text-transform:uppercase; letter-spacing:.5px; }
+.stg-ttl { font-size:12px; font-weight:800; color:var(--dark); }
+.stg-sub { font-size:10px; color:var(--soft); font-weight:600; }
+.stg-arr { margin-left:auto; font-size:16px; color:var(--coral); }
+
+/* ═══════════════════════════════════
+   SETTINGS SCREEN
+═══════════════════════════════════ */
+.sett-hdr { background:var(--warm-white); padding:4px 22px 16px; flex-shrink:0; }
+.sett-hdr h2 { font-family:'DM Serif Display',serif; font-size:22px; color:var(--dark); }
+.sett-hdr p  { font-size:11px; color:var(--soft); font-weight:600; margin-top:1px; }
+
+.sett-section { background:var(--warm-white); border-radius:20px; padding:4px 0; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,0,0,.04); overflow:hidden; }
+.sett-row {
+  display:flex; align-items:center; gap:12px; padding:13px 16px;
+  border-bottom:1px solid rgba(0,0,0,.04); cursor:pointer;
+  transition:background .12s;
+}
+.sett-row:last-child { border-bottom:none; }
+.sett-row:active { background:var(--lav-l); }
+.sett-ico { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.sett-info { flex:1; }
+.sett-lbl  { font-size:12px; font-weight:800; color:var(--dark); }
+.sett-sub  { font-size:10px; color:var(--soft); font-weight:600; }
+.sett-val  { font-size:11px; color:var(--lav); font-weight:800; }
+.sett-arr  { font-size:14px; color:var(--soft); }
+
+.toggle-wrap { display:flex; align-items:center; }
+.toggle {
+  width:38px; height:22px; border-radius:11px; border:none; cursor:pointer;
+  position:relative; transition:background .2s; flex-shrink:0;
+}
+.toggle.on  { background:var(--lav); }
+.toggle.off { background:#D0D0D0; }
+.toggle::after {
+  content:''; position:absolute; top:3px;
+  width:16px; height:16px; background:#fff; border-radius:50%;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:left .2s;
+}
+.toggle.on::after  { left:19px; }
+.toggle.off::after { left:3px; }
+
+.profile-card {
+  background:linear-gradient(135deg,var(--lav),#6B5CF0);
+  border-radius:20px; padding:16px 18px; margin-bottom:12px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:0 8px 20px rgba(107,92,240,.28);
+}
+.profile-ava { width:48px; height:48px; background:rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+.profile-name { font-family:'DM Serif Display',serif; font-size:18px; color:#fff; }
+.profile-age  { font-size:11px; color:rgba(255,255,255,.7); font-weight:700; margin-top:1px; }
+.profile-edit { margin-left:auto; background:rgba(255,255,255,.2); border:none; border-radius:10px; padding:6px 10px; color:#fff; font-size:10px; font-weight:800; font-family:inherit; cursor:pointer; }
+
+/* ═══════════════════════════════════
+   TOAST
+═══════════════════════════════════ */
+.toast {
+  position:absolute; bottom:88px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--dark); color:#fff; border-radius:14px; padding:10px 18px;
+  font-size:12px; font-weight:700; white-space:nowrap;
+  opacity:0; pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:100;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════
+   SLEEP ACTIVE STATE
+═══════════════════════════════════ */
+.sleep-active-banner {
+  background:linear-gradient(135deg,var(--lav),#6B5CF0);
+  border-radius:16px; padding:10px 14px; margin-bottom:12px;
+  display:flex; align-items:center; gap:10px;
+  animation:pulseBorder 2s ease-in-out infinite;
+}
+@keyframes pulseBorder {
+  0%,100% { box-shadow:0 0 0 0 rgba(139,124,248,.4); }
+  50%      { box-shadow:0 0 0 6px rgba(139,124,248,.0); }
+}
+.sa-dot { width:8px; height:8px; background:var(--gold); border-radius:50%; animation:blink 1.2s ease-in-out infinite; flex-shrink:0; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sa-lbl { font-size:10px; color:rgba(255,255,255,.75); font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+.sa-time { font-family:'DM Serif Display',serif; font-size:18px; color:#fff; margin-top:1px; }
+.sa-end { margin-left:auto; background:rgba(255,255,255,.2); border:none; border-radius:10px; padding:6px 12px; color:#fff; font-size:10px; font-weight:800; font-family:inherit; cursor:pointer; white-space:nowrap; }
+.sa-end:active { background:rgba(255,255,255,.35); }
 </style>
 </head>
 <body>
 
 <div class="page-title">
   <h1>LittleLog</h1>
-  <p>Latest Version · Empty State · All Features</p>
+  <p>Interactive Prototype · Tap to explore 👆</p>
 </div>
 
-<div class="phones-row">
+<div class="phone-wrap">
+  <div class="phone-notch"><div class="n-speaker"></div><div class="n-cam"></div></div>
 
-  <!-- HOME SCREEN -->
-  <div class="phone-wrap">
-    <div class="phone-notch"><div class="n-speaker"></div><div class="n-cam"></div></div>
-    <div class="phone-screen">
-      <div class="screen">
-        <div class="sbar">
-          <span class="sbar-time">9:41</span>
-          <span class="sbar-icons">●●● WiFi ⬛</span>
+  <div class="phone-screen" id="phoneScreen">
+
+    <!-- ═══ HOME ═══ -->
+    <div class="screen active" id="screen-home">
+      <div class="sbar">
+        <span class="sbar-time" id="clockDisplay">9:41</span>
+        <span class="sbar-icons">●●● WiFi ⬛</span>
+      </div>
+      <div class="app-hdr">
+        <div><h1>LittleLog</h1><p id="greeting">Good morning 👋</p></div>
+        <div class="avatar">🌙</div>
+      </div>
+      <div class="scroll">
+
+        <!-- Sleep active banner (hidden by default) -->
+        <div id="sleepBanner" style="display:none" class="sleep-active-banner">
+          <div class="sa-dot"></div>
+          <div>
+            <div class="sa-lbl">Sleep in progress</div>
+            <div class="sa-time" id="sleepTimer">0m 0s</div>
+          </div>
+          <button class="sa-end" onclick="endSleep()">⏹ End Sleep</button>
         </div>
-        
-        <div class="app-hdr">
-          <div><h1>LittleLog</h1><p>Good morning 👋</p></div>
-          <div class="avatar">🌙</div>
+
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-name">Tracking</div>
+              <div class="hero-baby" id="heroBabyName">My Baby's Day</div>
+            </div>
+            <div class="hero-age" id="heroAge">Set birthday</div>
+          </div>
+          <div class="ww-box">
+            <div class="ww-lbl">⏱ Wake Window</div>
+            <div class="ww-row">
+              <div class="ww-time" id="wakeTime">0h 0m <span>awake</span></div>
+              <div class="ww-bar-wrap"><div class="ww-bar" id="wakeBar" style="width:0%"></div></div>
+              <div class="ww-badge" id="wakePct">0%</div>
+            </div>
+          </div>
         </div>
-        
-        <div class="scroll">
-          <div class="hero">
-            <div class="hero-top">
-              <div>
-                <div class="hero-name">Tracking</div>
-                <div class="hero-baby">My Baby's Day</div>
+
+        <div class="slabel">Quick Log</div>
+        <div class="ql-row">
+          <button class="ql-btn sleep" id="sleepBtn" onclick="logSleep()">
+            <div class="ql-ico">🌙</div>
+            <div class="ql-lbl">Sleep</div>
+            <div class="ql-sub" id="sleepBtnSub">Start nap</div>
+          </button>
+          <button class="ql-btn wake" onclick="logWake()">
+            <div class="ql-ico">☀️</div>
+            <div class="ql-lbl">Wake</div>
+            <div class="ql-sub">End sleep</div>
+          </button>
+          <button class="ql-btn feed" onclick="logFeed()">
+            <div class="ql-ico">🍼</div>
+            <div class="ql-lbl">Feed</div>
+            <div class="ql-sub">Log now</div>
+          </button>
+        </div>
+
+        <div class="slabel">Today's Stats</div>
+        <div class="stat-row">
+          <div class="scard"><div class="scard-ico">🌙</div><div class="scard-val" id="statSleep">0h</div><div class="scard-lbl">Sleep</div><div class="pill pill-g">–</div></div>
+          <div class="scard"><div class="scard-ico">🍼</div><div class="scard-val" id="statFeeds">0x</div><div class="scard-lbl">Feedings</div></div>
+          <div class="scard"><div class="scard-ico">💤</div><div class="scard-val" id="statNaps">0</div><div class="scard-lbl">Naps</div></div>
+        </div>
+
+        <div class="slabel">Daily Target</div>
+        <div class="tl-card" style="background:linear-gradient(135deg,var(--lav-l),var(--mint-l)); border:1.5px solid var(--lav); padding:16px 18px; margin-bottom:14px">
+          <div style="display:flex; align-items:center; gap:14px">
+            <div style="font-size:48px; font-weight:900; color:var(--lav); letter-spacing:-2px; line-height:1" id="sleepTargetPct">0%</div>
+            <div style="flex:1">
+              <div style="font-size:11px; color:var(--lav); font-weight:800; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:4px">Daily Sleep Target</div>
+              <div style="font-size:10px; color:var(--mid); font-weight:600" id="sleepTargetDetail">0h of 14h recommended</div>
+              <div style="height:8px; background:rgba(139,124,248,0.15); border-radius:10px; margin-top:6px; overflow:hidden">
+                <div id="sleepTargetBar" style="height:100%; width:0%; background:var(--lav); border-radius:10px; transition:width 0.5s ease"></div>
               </div>
-              <div class="hero-age">Set birthday</div>
-            </div>
-            <div class="ww-box">
-              <div class="ww-lbl">⏱ Wake Window</div>
-              <div class="ww-row">
-                <div class="ww-time">0h 0m <span>awake</span></div>
-                <div class="ww-bar-wrap"><div class="ww-bar"></div></div>
-                <div class="ww-badge">0%</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="slabel">Quick Log</div>
-          <div class="ql-row">
-            <div class="ql-btn sleep">
-              <div class="ql-ico">🌙</div>
-              <div class="ql-lbl">Sleep</div>
-              <div class="ql-sub">Start nap</div>
-            </div>
-            <div class="ql-btn wake">
-              <div class="ql-ico">☀️</div>
-              <div class="ql-lbl">Wake</div>
-              <div class="ql-sub">End sleep</div>
-            </div>
-            <div class="ql-btn feed">
-              <div class="ql-ico">🍼</div>
-              <div class="ql-lbl">Feed</div>
-              <div class="ql-sub">Log now</div>
-            </div>
-          </div>
-
-          <div class="slabel">Today's Stats</div>
-          <div class="stat-row">
-            <div class="scard"><div class="scard-ico">🌙</div><div class="scard-val">0h</div><div class="scard-lbl">Sleep</div><div class="pill">–</div></div>
-            <div class="scard"><div class="scard-ico">🍼</div><div class="scard-val">0x</div><div class="scard-lbl">Feedings</div></div>
-            <div class="scard"><div class="scard-ico">💤</div><div class="scard-val">0</div><div class="scard-lbl">Naps</div></div>
-          </div>
-
-          <div class="slabel">Daily Target</div>
-          <div class="target-card">
-            <div style="display:flex; align-items:center; gap:14px">
-              <div class="target-pct">0%</div>
-              <div style="flex:1">
-                <div class="target-lbl">Daily Sleep Target</div>
-                <div class="target-detail">0h of 14h recommended</div>
-                <div class="target-bar-w"><div class="target-bar"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="tl-card">
-            <div class="tl-hdr">
-              <div class="tl-hdr-title">Recent Events</div>
-            </div>
-            <div class="empty">
-              <div class="empty-ico">📝</div>
-              <div class="empty-title">No events yet</div>
-              <div class="empty-sub">Tap the buttons above to start logging</div>
             </div>
           </div>
         </div>
 
-        <div class="nav">
-          <div class="nav-btn active"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></div>
-          <div class="nav-btn"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></div>
-          <div class="nav-btn"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></div>
-          <div class="nav-btn"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></div>
+        <div class="rem-card" id="reminderCard" style="display:none">
+          <div class="rem-ico">🍼</div>
+          <div>
+            <div class="rem-lbl">Up next</div>
+            <div class="rem-title">Feeding reminder</div>
+            <div class="rem-time">Due at 11:15 AM</div>
+          </div>
+          <div class="rem-cd"><div class="rem-mins" id="remMins">22</div><div class="rem-ml">min</div></div>
         </div>
+
+        <div class="tl-card">
+          <div class="tl-hdr">
+            <div class="tl-hdr-title">Recent Events</div>
+            <div class="tl-link" onclick="navTo('log')">See all →</div>
+          </div>
+          <div class="tl-list" id="timeline">
+            <div style="text-align:center; padding:40px 20px; color:var(--soft)">
+              <div style="font-size:40px; margin-bottom:12px">📝</div>
+              <div style="font-size:13px; font-weight:700">No events yet</div>
+              <div style="font-size:11px; margin-top:4px">Tap the buttons above to start logging</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="nav">
+        <button class="nav-btn active" onclick="navTo('home')"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></button>
+        <button class="nav-btn" onclick="navTo('log')"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></button>
+        <button class="nav-btn" onclick="navTo('stats')"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></button>
+        <button class="nav-btn" onclick="navTo('settings')"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></button>
       </div>
     </div>
-  </div>
 
-  <!-- STATS SCREEN -->
-  <div class="phone-wrap">
-    <div class="phone-notch"><div class="n-speaker"></div><div class="n-cam"></div></div>
-    <div class="phone-screen">
-      <div class="screen">
-        <div class="sbar">
-          <span class="sbar-time">9:41</span>
-          <span class="sbar-icons">●●● WiFi ⬛</span>
+    <!-- ═══ LOG ═══ -->
+    <div class="screen" id="screen-log">
+      <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
+      <div class="log-hdr"><h2>Log Event</h2><p id="logSubtitle">Tap to record an event</p></div>
+      <div class="scroll">
+
+        <div id="savedBanner" style="display:none" class="saved-banner">
+          ✅ &nbsp;Event saved to log!
         </div>
-        
-        <div class="stats-hdr">
-          <div><h2>Statistics</h2><p>Track progress</p></div>
+
+        <div class="log-tabs">
+          <button class="log-tab active" id="tabSleep" onclick="switchTab('sleep')">🌙 Sleep</button>
+          <button class="log-tab" id="tabFeed" onclick="switchTab('feed')">🍼 Feed</button>
+          <button class="log-tab" id="tabWake" onclick="switchTab('wake')">☀️ Wake</button>
         </div>
-        
-        <div class="scroll">
-          <div class="sum-strip">
-            <div class="sum-item"><div class="sum-v">0</div><div class="sum-u">hrs/day</div><div class="sum-l">Avg Sleep</div></div>
-            <div class="sum-item"><div class="sum-v">0</div><div class="sum-u">feeds</div><div class="sum-l">Avg Feeds</div></div>
-            <div class="sum-item"><div class="sum-v">0</div><div class="sum-u">naps</div><div class="sum-l">Avg Naps</div></div>
-          </div>
 
-          <div class="chart-card">
-            <div class="chart-hdr">
-              <div class="chart-title">Daily Sleep (hrs)</div>
-              <div class="chart-badge">No data yet</div>
-            </div>
-            <svg width="100%" height="80" viewBox="0 0 272 80">
-              <line x1="0" y1="15" x2="272" y2="15" stroke="#EDE9FF" stroke-width="1"/>
-              <line x1="0" y1="40" x2="272" y2="40" stroke="#EDE9FF" stroke-width="1"/>
-              <line x1="0" y1="64" x2="272" y2="64" stroke="#EDE9FF" stroke-width="1"/>
-              <rect x="26"  y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
-              <rect x="56"  y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
-              <rect x="86"  y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
-              <rect x="116" y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
-              <rect x="146" y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
-              <rect x="176" y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
-              <rect x="206" y="64" width="24" height="0" rx="6" fill="#8B7CF8" opacity="0.5"/>
-              <text x="136" y="40" font-size="11" fill="#A89EC4" font-family="Nunito" font-weight="600" text-anchor="middle">Start logging to see data</text>
-            </svg>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-hdr">
-              <div class="chart-title">Feeding Frequency</div>
-              <div class="chart-badge">No data yet</div>
-            </div>
-            <svg width="100%" height="80" viewBox="0 0 272 80">
-              <line x1="0" y1="20" x2="272" y2="20" stroke="#EDE9FF" stroke-width="1"/>
-              <line x1="0" y1="48" x2="272" y2="48" stroke="#EDE9FF" stroke-width="1"/>
-              <text x="136" y="40" font-size="11" fill="#A89EC4" font-family="Nunito" font-weight="600" text-anchor="middle">Start logging to see trends</text>
-            </svg>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-hdr"><div class="chart-title">Sleep Breakdown</div></div>
-            <div style="padding:20px; text-align:center">
-              <div style="font-size:11px; color:var(--soft); font-weight:600;">No sleep data recorded yet</div>
+        <!-- Sleep form -->
+        <div id="formSleep" class="log-form">
+          <h3>Log Sleep</h3>
+          <div class="form-row">
+            <div class="form-lbl">Sleep Type</div>
+            <div class="type-pills">
+              <button class="type-pill sel" onclick="selPill(this,'nap')">💤 Nap</button>
+              <button class="type-pill" onclick="selPill(this,'night')">🌙 Night Sleep</button>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-lbl">Start Time</div>
+            <input class="form-input" type="time" value="09:30" id="sleepStart">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">End Time</div>
+            <input class="form-input" type="time" value="10:45" id="sleepEnd">
+          </div>
+          <button class="save-btn" onclick="saveEvent('sleep')">Save Sleep Event</button>
         </div>
 
-        <div class="nav">
-          <div class="nav-btn"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></div>
-          <div class="nav-btn"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></div>
-          <div class="nav-btn active"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></div>
-          <div class="nav-btn"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></div>
+        <!-- Feed form -->
+        <div id="formFeed" class="log-form" style="display:none">
+          <h3>Log Feeding</h3>
+          <div class="form-row">
+            <div class="form-lbl">Type</div>
+            <div class="type-pills">
+              <button class="type-pill sel" onclick="selPill(this,'bottle')">🍼 Bottle</button>
+              <button class="type-pill" onclick="selPill(this,'breast')">🤱 Breast</button>
+              <button class="type-pill" onclick="selPill(this,'solid')">🥣 Solid</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Time</div>
+            <input class="form-input" type="time" value="09:41" id="feedTime">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Amount (ml)</div>
+            <input class="form-input" type="number" value="150" min="0" max="500" id="feedAmount">
+          </div>
+          <button class="save-btn" onclick="saveEvent('feed')">Save Feeding</button>
         </div>
+
+        <!-- Wake form -->
+        <div id="formWake" class="log-form" style="display:none">
+          <h3>Log Wake</h3>
+          <div class="form-row">
+            <div class="form-lbl">Wake Time</div>
+            <input class="form-input" type="time" value="09:41" id="wakeTimeInput">
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Notes (optional)</div>
+            <input class="form-input" type="text" placeholder="e.g. woke early, seemed hungry..." id="wakeNotes">
+          </div>
+          <button class="save-btn" onclick="saveEvent('wake')">Save Wake Event</button>
+        </div>
+
+        <!-- Recent log list -->
+        <div class="tl-card">
+          <div class="tl-hdr"><div class="tl-hdr-title">Today's Log</div></div>
+          <div class="tl-list" id="logList">
+            <div style="text-align:center; padding:20px; color:var(--soft); font-size:11px">
+              Events you log will appear here
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="nav">
+        <button class="nav-btn" onclick="navTo('home')"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></button>
+        <button class="nav-btn active" onclick="navTo('log')"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></button>
+        <button class="nav-btn" onclick="navTo('stats')"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></button>
+        <button class="nav-btn" onclick="navTo('settings')"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></button>
       </div>
     </div>
-  </div>
 
-</div>
+    <!-- ═══ STATS ═══ -->
+    <div class="screen" id="screen-stats">
+      <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
+      <div class="stats-hdr">
+        <div><h2>Statistics</h2><p id="statsSubtitle">Track progress</p></div>
+        <div class="range-pills">
+          <button class="rpill" onclick="setRange(this,'7d')">7d</button>
+          <button class="rpill active" onclick="setRange(this,'30d')">30d</button>
+          <button class="rpill" onclick="setRange(this,'90d')">90d</button>
+        </div>
+      </div>
+      <div class="scroll">
 
-<div style="text-align:center; margin-top:32px; color:var(--soft); font-size:12px; max-width:600px; line-height:1.6; position:relative; z-index:1;">
-  <strong style="color:var(--dark)">✨ Latest Version Features:</strong><br>
-  • Empty state ready for your baby's data<br>
-  • Editable baby name & birthday (tap Edit in Settings)<br>
-  • Dynamic age calculation<br>
-  • New: Daily sleep target percentage card<br>
-  • All stats start at 0 and populate as you log<br>
-  • Bigger, easier-to-tap navigation buttons<br>
-  • PWA installable on Android
-</div>
+        <div class="sum-strip">
+          <div class="sum-item"><div class="sum-v" id="sAvgSleep">0</div><div class="sum-u">hrs/day</div><div class="sum-l">Avg Sleep</div></div>
+          <div class="sum-item"><div class="sum-v" id="sAvgFeeds">0</div><div class="sum-u">feeds</div><div class="sum-l">Avg Feeds</div></div>
+          <div class="sum-item"><div class="sum-v" id="sAvgNaps">0</div><div class="sum-u">naps</div><div class="sum-l">Avg Naps</div></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-title">Daily Sleep (hrs)</div>
+            <div class="chart-badge cb-mint" id="sleepTrend">No data yet</div>
+          </div>
+          <svg width="100%" height="80" viewBox="0 0 272 80">
+            <line x1="0" y1="15" x2="272" y2="15" stroke="#EDE9FF" stroke-width="1"/>
+            <line x1="0" y1="40" x2="272" y2="40" stroke="#EDE9FF" stroke-width="1"/>
+            <line x1="0" y1="64" x2="272" y2="64" stroke="#EDE9FF" stroke-width="1"/>
+            <text x="2" y="77" font-size="8" fill="#A89EC4" font-family="Nunito" font-weight="700">12h</text>
+            <text x="2" y="52" font-size="8" fill="#A89EC4" font-family="Nunito" font-weight="700">13h</text>
+            <text x="2" y="27" font-size="8" fill="#A89EC4" font-family="Nunito" font-weight="700">14h</text>
+            <rect x="26"  y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
+            <rect x="56"  y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
+            <rect x="86"  y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
+            <rect x="116" y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
+            <rect x="146" y="64" width="24" height="0" rx="6" fill="#C4BBFF"/>
+            <rect x="176" y="64" width="24" height="0" rx="6" fill="#8B7CF8"/>
+            <rect x="206" y="64" width="24" height="0" rx="6" fill="#8B7CF8" opacity="0.5"/>
+            <text x="136" y="40" font-size="11" fill="#A89EC4" font-family="Nunito" font-weight="600" text-anchor="middle">Start logging to see data</text>
+          </svg>
+          <div class="xlabels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-title">Feeding Frequency</div>
+            <div class="chart-badge cb-coral">No data yet</div>
+          </div>
+          <svg width="100%" height="80" viewBox="0 0 272 80">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FF8C69" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#FF8C69" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="20" x2="272" y2="20" stroke="#EDE9FF" stroke-width="1"/>
+            <line x1="0" y1="48" x2="272" y2="48" stroke="#EDE9FF" stroke-width="1"/>
+            <text x="136" y="40" font-size="11" fill="#A89EC4" font-family="Nunito" font-weight="600" text-anchor="middle">Start logging to see trends</text>
+          </svg>
+          <div class="xlabels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </div>
+
+        <div class="bd-card">
+          <div class="chart-hdr"><div class="chart-title">Sleep Breakdown</div></div>
+          <div class="bd-row">
+            <div class="bd-ico" style="background:var(--lav-l)">🌙</div>
+            <div class="bd-info">
+              <div class="bd-lbl">Night sleep</div><div class="bd-sub">No data</div>
+              <div class="bd-bar-w"><div class="bd-bar" style="width:0%;background:var(--lav)"></div></div>
+            </div>
+            <div class="bd-val">0h</div>
+          </div>
+          <div class="bd-row">
+            <div class="bd-ico" style="background:var(--coral-l)">💤</div>
+            <div class="bd-info">
+              <div class="bd-lbl">Nap 1</div><div class="bd-sub">No data</div>
+              <div class="bd-bar-w"><div class="bd-bar" style="width:0%;background:var(--coral)"></div></div>
+            </div>
+            <div class="bd-val">0h</div>
+          </div>
+          <div class="bd-row">
+            <div class="bd-ico" style="background:var(--gold-l)">😴</div>
+            <div class="bd-info">
+              <div class="bd-lbl">Nap 2</div><div class="bd-sub">No data</div>
+              <div class="bd-bar-w"><div class="bd-bar" style="width:0%;background:var(--gold)"></div></div>
+            </div>
+            <div class="bd-val">0h</div>
+          </div>
+        </div>
+
+        <div class="stage-card">
+          <div class="stage-ico">📈</div>
+          <div>
+            <div class="stg-lbl">Age Stage</div>
+            <div class="stg-ttl">3–6 Month Schedule</div>
+            <div class="stg-sub">Recommended: 14–15 hrs · 3 naps</div>
+          </div>
+          <div class="stg-arr">›</div>
+        </div>
+
+      </div>
+      <div class="nav">
+        <button class="nav-btn" onclick="navTo('home')"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></button>
+        <button class="nav-btn" onclick="navTo('log')"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></button>
+        <button class="nav-btn active" onclick="navTo('stats')"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></button>
+        <button class="nav-btn" onclick="navTo('settings')"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></button>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="screen" id="screen-settings">
+      <div class="sbar"><span class="sbar-time">9:41</span><span class="sbar-icons">●●● WiFi ⬛</span></div>
+      <div class="sett-hdr"><h2>Settings</h2><p id="settingsSubtitle">Profile &amp; preferences</p></div>
+      <div class="scroll">
+
+        <div class="profile-card">
+          <div class="profile-ava">👶</div>
+          <div style="flex:1">
+            <div class="profile-name" id="babyName">My Baby</div>
+            <div class="profile-age" id="babyAge">Tap Edit to set birthday</div>
+          </div>
+          <button class="profile-edit" onclick="editProfile()">Edit</button>
+        </div>
+
+        <div class="slabel">Schedule Recommendations</div>
+        <div class="sett-section">
+          <div class="sett-row" onclick="showToast('💤 Wake window: 2–3 hrs (age default)')">
+            <div class="sett-ico" style="background:var(--lav-l)">⏱</div>
+            <div class="sett-info"><div class="sett-lbl">Wake Windows</div><div class="sett-sub">Age-appropriate defaults</div></div>
+            <div class="sett-val">2–3 hrs</div>
+            <div class="sett-arr">›</div>
+          </div>
+          <div class="sett-row" onclick="showToast('🌙 Sleep target: 14–15 hrs (age default)')">
+            <div class="sett-ico" style="background:var(--lav-l)">🌙</div>
+            <div class="sett-info"><div class="sett-lbl">Sleep Target</div><div class="sett-sub">Daily sleep goal</div></div>
+            <div class="sett-val">14–15 hrs</div>
+            <div class="sett-arr">›</div>
+          </div>
+          <div class="sett-row" onclick="showToast('🍼 Feeding interval: every 3.5 hrs')">
+            <div class="sett-ico" style="background:var(--coral-l)">🍼</div>
+            <div class="sett-info"><div class="sett-lbl">Feeding Interval</div><div class="sett-sub">Reminder frequency</div></div>
+            <div class="sett-val">3.5 hrs</div>
+            <div class="sett-arr">›</div>
+          </div>
+          <div class="sett-row" onclick="showToast('💤 Nap count: 2–3 naps/day')">
+            <div class="sett-ico" style="background:var(--gold-l)">💤</div>
+            <div class="sett-info"><div class="sett-lbl">Daily Naps</div><div class="sett-sub">Expected nap count</div></div>
+            <div class="sett-val">2–3 naps</div>
+            <div class="sett-arr">›</div>
+          </div>
+        </div>
+
+        <div class="slabel">Notifications</div>
+        <div class="sett-section">
+          <div class="sett-row">
+            <div class="sett-ico" style="background:var(--mint-l)">🔔</div>
+            <div class="sett-info"><div class="sett-lbl">Push Notifications</div><div class="sett-sub">Feed &amp; nap reminders</div></div>
+            <div class="toggle-wrap"><button class="toggle on" id="tog1" onclick="toggleSwitch('tog1')"></button></div>
+          </div>
+          <div class="sett-row">
+            <div class="sett-ico" style="background:var(--gold-l)">🌙</div>
+            <div class="sett-info"><div class="sett-lbl">Quiet Hours</div><div class="sett-sub">10 PM – 6 AM</div></div>
+            <div class="toggle-wrap"><button class="toggle on" id="tog2" onclick="toggleSwitch('tog2')"></button></div>
+          </div>
+          <div class="sett-row">
+            <div class="sett-ico" style="background:var(--coral-l)">📊</div>
+            <div class="sett-info"><div class="sett-lbl">Daily Summary</div><div class="sett-sub">Evening recap at 7 PM</div></div>
+            <div class="toggle-wrap"><button class="toggle off" id="tog3" onclick="toggleSwitch('tog3')"></button></div>
+          </div>
+        </div>
+
+        <div class="slabel">Account</div>
+        <div class="sett-section">
+          <div class="sett-row" onclick="showToast('👥 Caregiver sharing coming soon!')">
+            <div class="sett-ico" style="background:var(--lav-l)">👥</div>
+            <div class="sett-info"><div class="sett-lbl">Share with Caregiver</div><div class="sett-sub">Invite co-parent or nanny</div></div>
+            <div class="sett-arr">›</div>
+          </div>
+          <div class="sett-row" onclick="showToast('📤 Export: CSV &amp; PDF coming soon!')">
+            <div class="sett-ico" style="background:var(--mint-l)">📤</div>
+            <div class="sett-info"><div class="sett-lbl">Export Data</div><div class="sett-sub">CSV or PDF report</div></div>
+            <div class="sett-arr">›</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="nav">
+        <button class="nav-btn" onclick="navTo('home')"><span class="nav-ico">🏠</span><span class="nav-lbl">Home</span></button>
+        <button class="nav-btn" onclick="navTo('log')"><span class="nav-ico">📝</span><span class="nav-lbl">Log</span></button>
+        <button class="nav-btn" onclick="navTo('stats')"><span class="nav-ico">📊</span><span class="nav-lbl">Stats</span></button>
+        <button class="nav-btn active" onclick="navTo('settings')"><span class="nav-ico">⚙️</span><span class="nav-lbl">Settings</span></button>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+  </div><!-- phone-screen -->
+</div><!-- phone-wrap -->
+
+<script>
+/* ── STATE ── */
+let currentScreen = 'home';
+let sleepActive = false;
+let sleepStartTime = null;
+let sleepTimerInterval = null;
+let feedCount = 0;
+let napCount = 0;
+let wakeMinutes = 0;
+let wakeWindowMax = 150; // 2.5h for 6mo
+let remMinutes = 22;
+
+/* ── CLOCK ── */
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  const fmt = h.toString().padStart(2,'0') + ':' + m.toString().padStart(2,'0');
+  document.querySelectorAll('.sbar-time').forEach(el => el.textContent = fmt);
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+/* ── WAKE WINDOW TICKER ── */
+setInterval(() => {
+  if (!sleepActive) {
+    wakeMinutes += 1;
+    const pct = Math.min(Math.round((wakeMinutes / wakeWindowMax) * 100), 100);
+    const h = Math.floor(wakeMinutes / 60), m = wakeMinutes % 60;
+    document.getElementById('wakeTime').innerHTML = `${h}h ${m}m <span>awake</span>`;
+    document.getElementById('wakeBar').style.width = pct + '%';
+    document.getElementById('wakePct').textContent = pct + '%';
+    if (pct >= 90) document.getElementById('wakeBar').style.background = 'linear-gradient(90deg,#FFD6A5,#FF8C69)';
+  }
+}, 5000);
+
+/* ── REMINDER COUNTDOWN ── */
+setInterval(() => {
+  if (remMinutes > 0) {
+    remMinutes--;
+    document.getElementById('remMins').textContent = remMinutes;
+  }
+}, 60000);
+
+/* ── NAVIGATION ── */
+function navTo(screen) {
+  const prev = document.getElementById('screen-' + currentScreen);
+  prev.classList.remove('active');
+  prev.classList.add('slide-left');
+  setTimeout(() => prev.classList.remove('slide-left'), 300);
+
+  const next = document.getElementById('screen-' + screen);
+  next.classList.add('active');
+  currentScreen = screen;
+
+  // update nav buttons
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const lbl = b.querySelector('.nav-lbl');
+    if (lbl && lbl.textContent.toLowerCase().includes(screen === 'home' ? 'home' : screen === 'log' ? 'log' : screen === 'stats' ? 'stats' : 'setting')) {
+      b.classList.add('active');
+    }
+  });
+}
+
+/* ── SLEEP LOGGING ── */
+function logSleep() {
+  if (sleepActive) { showToast('💤 Sleep already in progress!'); return; }
+  sleepActive = true;
+  sleepStartTime = Date.now();
+  document.getElementById('sleepBanner').style.display = 'flex';
+  document.getElementById('sleepBtnSub').textContent = 'In progress';
+  document.getElementById('sleepBtn').style.outline = '2.5px solid var(--lav)';
+  wakeMinutes = 0;
+  document.getElementById('wakeBar').style.width = '0%';
+  document.getElementById('wakePct').textContent = '0%';
+  document.getElementById('wakeTime').innerHTML = '0h 0m <span>awake</span>';
+  sleepTimerInterval = setInterval(updateSleepTimer, 1000);
+  showToast('🌙 Sleep started!');
+  addToTimeline('sleep', '💤', 'Nap started', 'just now', '…');
+  napCount++;
+  document.getElementById('statNaps').textContent = napCount + 'x';
+}
+
+function updateSleepTimer() {
+  const secs = Math.floor((Date.now() - sleepStartTime) / 1000);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  document.getElementById('sleepTimer').textContent = `${m}m ${s}s`;
+}
+
+function endSleep() {
+  if (!sleepActive) return;
+  sleepActive = false;
+  clearInterval(sleepTimerInterval);
+  document.getElementById('sleepBanner').style.display = 'none';
+  document.getElementById('sleepBtnSub').textContent = 'Start nap';
+  document.getElementById('sleepBtn').style.outline = '';
+  const secs = Math.floor((Date.now() - sleepStartTime) / 1000);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const durStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+  showToast(`✅ Sleep logged: ${durStr}`);
+  addToTimeline('sleep', '💤', 'Nap ended', 'just now', durStr);
+}
+
+/* ── WAKE/FEED LOGGING ── */
+function logWake() {
+  if (sleepActive) { endSleep(); return; }
+  wakeMinutes = 0;
+  document.getElementById('wakeBar').style.background = 'linear-gradient(90deg,#fff 0%,var(--gold) 100%)';
+  document.getElementById('wakeBar').style.width = '0%';
+  document.getElementById('wakePct').textContent = '0%';
+  document.getElementById('wakeTime').innerHTML = '0h 0m <span>awake</span>';
+  showToast('☀️ Wake logged! Window reset.');
+  addToTimeline('wake', '☀️', 'Woke up', 'just now', '');
+}
+
+function logFeed() {
+  feedCount++;
+  document.getElementById('statFeeds').textContent = feedCount + 'x';
+  const pill = document.getElementById('feedPill');
+  if (feedCount >= 5) { pill.textContent = 'Done!'; pill.className = 'pill pill-g'; }
+  remMinutes = 210; // reset 3.5h
+  showToast('🍼 Feeding logged!');
+  addToTimeline('feed', '🍼', `Feed #${feedCount}`, 'just now', '~150ml');
+}
+
+/* ── ADD TO TIMELINE ── */
+function addToTimeline(type, ico, label, time, dur) {
+  const dotClass = type === 'sleep' ? 's' : type === 'feed' ? 'f' : 'w';
+  const html = `<div class="tl-item" style="animation:slideIn .3s ease">
+    <div class="tl-dot ${dotClass}">${ico}</div>
+    <div class="tl-info"><div class="tl-nm">${label}</div><div class="tl-tm">${time}</div></div>
+    <div class="tl-dur">${dur}</div>
+  </div>`;
+  
+  const tl = document.getElementById('timeline');
+  // Clear empty state if this is first event
+  if (tl.querySelector('[style*="text-align:center"]')) {
+    tl.innerHTML = '';
+  }
+  tl.insertAdjacentHTML('afterbegin', html);
+  
+  const logList = document.getElementById('logList');
+  if (logList) {
+    // Clear empty state if this is first event
+    if (logList.querySelector('[style*="text-align:center"]')) {
+      logList.innerHTML = '';
+    }
+    logList.insertAdjacentHTML('afterbegin', html);
+  }
+}
+
+/* ── LOG SCREEN ── */
+function switchTab(tab) {
+  ['sleep','feed','wake'].forEach(t => {
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t === tab);
+    document.getElementById('form'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+function selPill(btn, val) {
+  btn.closest('.type-pills').querySelectorAll('.type-pill').forEach(p => p.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function saveEvent(type) {
+  const banner = document.getElementById('savedBanner');
+  banner.style.display = 'flex';
+  const messages = { sleep:'🌙 Sleep saved!', feed:'🍼 Feeding saved!', wake:'☀️ Wake saved!' };
+  showToast(messages[type]);
+  if (type === 'feed') { feedCount++; document.getElementById('statFeeds').textContent = feedCount + 'x'; }
+  setTimeout(() => banner.style.display = 'none', 3000);
+  const icos = { sleep:'🌙', feed:'🍼', wake:'☀️' };
+  const labels = { sleep:'Sleep event', feed:'Feeding', wake:'Wake event' };
+  addToTimeline(type, icos[type], labels[type], 'just now', '');
+}
+
+/* ── STATS RANGE ── */
+const statsData = {
+  '7d':  { sleep:'13.8', feeds:'5.1', naps:'2.3', trend:'↑ +0.6h this week' },
+  '30d': { sleep:'13.2', feeds:'4.8', naps:'2.1', trend:'↑ +0.4h this week' },
+  '90d': { sleep:'12.7', feeds:'4.5', naps:'2.0', trend:'↗ +0.2h avg trend' },
+};
+
+function setRange(btn, range) {
+  document.querySelectorAll('.rpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const d = statsData[range];
+  document.getElementById('sAvgSleep').textContent = d.sleep;
+  document.getElementById('sAvgFeeds').textContent = d.feeds;
+  document.getElementById('sAvgNaps').textContent  = d.naps;
+  document.getElementById('sleepTrend').textContent = d.trend;
+}
+
+/* ── SETTINGS TOGGLES ── */
+function toggleSwitch(id) {
+  const t = document.getElementById(id);
+  const isOn = t.classList.contains('on');
+  t.classList.toggle('on', !isOn);
+  t.classList.toggle('off', isOn);
+  showToast(isOn ? '🔕 Notification turned off' : '🔔 Notification turned on');
+}
+
+/* ── EDIT PROFILE ── */
+function editProfile() {
+  const currentName = localStorage.getItem('babyName') || 'My Baby';
+  const currentBirthday = localStorage.getItem('babyBirthday') || '';
+  
+  const newName = prompt('Baby\'s name:', currentName);
+  if (!newName || !newName.trim()) return;
+  
+  const newBirthday = prompt('Birthday (YYYY-MM-DD):', currentBirthday);
+  if (!newBirthday) return;
+  
+  // Validate date format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(newBirthday)) {
+    alert('Please use format: YYYY-MM-DD (e.g., 2024-08-13)');
+    return;
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('babyName', newName.trim());
+  localStorage.setItem('babyBirthday', newBirthday);
+  
+  // Update UI
+  updateBabyInfo();
+  showToast('✅ Profile updated!');
+}
+
+function updateBabyInfo() {
+  const name = localStorage.getItem('babyName') || 'My Baby';
+  const birthday = localStorage.getItem('babyBirthday');
+  
+  // Update name everywhere
+  document.getElementById('babyName').textContent = name;
+  document.getElementById('heroBabyName').textContent = name + '\'s Day';
+  document.getElementById('logSubtitle').textContent = 'Tap to record an event for ' + name;
+  document.getElementById('settingsSubtitle').textContent = name + '\'s profile & preferences';
+  
+  if (birthday) {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    
+    // Calculate age
+    let months = (today.getFullYear() - birthDate.getFullYear()) * 12;
+    months -= birthDate.getMonth();
+    months += today.getMonth();
+    
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    let ageText = '';
+    if (years > 0) {
+      ageText = years + (years === 1 ? ' year' : ' years');
+      if (remainingMonths > 0) ageText += ' ' + remainingMonths + (remainingMonths === 1 ? ' month' : ' months');
+    } else {
+      ageText = months + (months === 1 ? ' month' : ' months') + ' old';
+    }
+    
+    // Format birthday for display
+    const formatted = birthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    
+    document.getElementById('babyAge').textContent = ageText + ' · Born ' + formatted;
+    document.getElementById('heroAge').textContent = months + (months === 1 ? ' month' : ' months');
+    document.getElementById('statsSubtitle').textContent = name + ' · ' + ageText;
+  } else {
+    document.getElementById('babyAge').textContent = 'Tap Edit to set birthday';
+    document.getElementById('heroAge').textContent = 'Set birthday';
+    document.getElementById('statsSubtitle').textContent = 'Track progress';
+  }
+  
+  updateSleepTarget();
+}
+
+function updateSleepTarget() {
+  const totalSleepMinutes = 0; // Will be calculated from logged sleep events
+  const totalSleepHours = totalSleepMinutes / 60;
+  const recommendedHours = 14; // Age-appropriate target (can be dynamic later)
+  
+  const percentage = Math.min(Math.round((totalSleepHours / recommendedHours) * 100), 100);
+  
+  document.getElementById('sleepTargetPct').textContent = percentage + '%';
+  document.getElementById('sleepTargetDetail').textContent = 
+    totalSleepHours.toFixed(1) + 'h of ' + recommendedHours + 'h recommended';
+  document.getElementById('sleepTargetBar').style.width = percentage + '%';
+}
+
+// Load saved profile on startup
+window.addEventListener('DOMContentLoaded', updateBabyInfo);
+
+/* ── TOAST ── */
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ── PWA SERVICE WORKER ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('✅ Service Worker registered'))
+      .catch(err => console.log('❌ Service Worker failed:', err));
+  });
+}
+
+/* ── PWA INSTALL PROMPT ── */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install prompt after 5 seconds
+  setTimeout(() => {
+    if (deferredPrompt) {
+      showToast('📲 Tap to install LittleLog on your home screen!');
+    }
+  }, 5000);
+});
+
+// Optional: trigger install on user action
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        showToast('✅ LittleLog installed!');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+/* ── PERSIST DATA (localStorage for PWA) ── */
+function saveData() {
+  const data = {
+    feedCount, napCount, wakeMinutes, remMinutes,
+    sleepActive, sleepStartTime
+  };
+  localStorage.setItem('littlelog-data', JSON.stringify(data));
+}
+
+function loadData() {
+  const saved = localStorage.getItem('littlelog-data');
+  if (saved) {
+    const data = JSON.parse(saved);
+    feedCount = data.feedCount || 3;
+    napCount = data.napCount || 2;
+    wakeMinutes = data.wakeMinutes || 84;
+    remMinutes = data.remMinutes || 22;
+    sleepActive = data.sleepActive || false;
+    sleepStartTime = data.sleepStartTime || null;
+    
+    // Update UI
+    document.getElementById('statFeeds').textContent = feedCount + 'x';
+    document.getElementById('statNaps').textContent = napCount + 'x';
+    
+    if (sleepActive && sleepStartTime) {
+      document.getElementById('sleepBanner').style.display = 'flex';
+      sleepTimerInterval = setInterval(updateSleepTimer, 1000);
+    }
+  }
+}
+
+// Auto-save every 10 seconds
+setInterval(saveData, 10000);
+
+// Load on startup
+loadData();
+
+// Save before unload
+window.addEventListener('beforeunload', saveData);
+
+</script>
 
 </body>
 </html>
+
